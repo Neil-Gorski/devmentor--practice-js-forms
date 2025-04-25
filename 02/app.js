@@ -3,53 +3,45 @@ const passwordField1 = document.querySelector("#formPass1");
 const passwordField2 = document.querySelector("#formPass2");
 const acceptBox = document.querySelector("#formAccept");
 const form = document.querySelector("form");
+const registerBtn = document.querySelector(`input[value="register"]`);
 form.setAttribute("novalidate", true);
 
-const errors = [];
-let passwordEntered = "";
-console.log(emailField);
 emailField.addEventListener("input", validateEmail);
 form.addEventListener("submit", (e) => e.preventDefault());
 document.addEventListener("DOMContentLoaded", addAllElementsAsError);
 passwordField1.addEventListener("input", validatePassword1);
 passwordField2.addEventListener("input", validatePassword2);
 acceptBox.addEventListener("change", validateRegulations);
+registerBtn.addEventListener("click", validateForm);
+
+const errors = [];
+let password1Entered = "";
 
 function validatePassword1(e) {
-  if (this.value.length <= 6) {
+  if (this.value.length < 7) {
     addError(passwordField1);
   } else {
     removeError(passwordField1);
-    passwordEntered = this.value;
+    password1Entered = this.value;
   }
   validatePassword2.call(passwordField2, { target: passwordField2 });
-  git;
-  console.log(errors);
 }
 
 function validatePassword2(e) {
-  if (this.value !== passwordEntered) {
-    addError(passwordField2);
-  } else {
-    removeError(passwordField2);
-  }
-  console.log(this.value, errors);
+  this.value.length < 6 || this.value !== password1Entered
+    ? addError(passwordField2)
+    : removeError(passwordField2);
 }
 function validateEmail(e) {
-  const lableEmail = emailField.previousElementSibling;
   const reEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!reEmail.test(this.value)) {
-    addError(emailField);
-  } else {
-    removeError(emailField);
-  }
+  !reEmail.test(this.value) ? addError(emailField) : removeError(emailField);
 }
 
 function addError(element) {
   if (!errors.includes(element)) {
     errors.push(element);
   }
-  console.log(errors);
+  // console.log(errors);
 }
 
 function removeError(element) {
@@ -60,7 +52,7 @@ function removeError(element) {
       errors.splice(index, 1);
     }
   }
-  console.log(errors);
+  // console.log(errors);
 }
 
 function validateRegulations(e) {
@@ -69,9 +61,8 @@ function validateRegulations(e) {
     markLable(e.target, "black");
   } else {
     addError(e.target);
-    console.log("uncheckd");
   }
-  console.log(errors);
+  // console.log(errors);
 }
 
 function checkRegulations(e) {
@@ -91,5 +82,16 @@ function addAllElementsAsError() {
       errors.push(input);
     }
   }
-  console.log(errors);
+}
+
+function validateForm(e) {
+  e.preventDefault();
+  if (errors.length === 0) {
+    console.log("done");
+  } else {
+    for (element of errors) {
+      markLable(element, "red");
+      console.log(`error on inputfield: ${element.outerHTML}`);
+    }
+  }
 }
