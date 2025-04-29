@@ -1,97 +1,89 @@
-const postalCodeMap = {
-  dolnośląskie: ["50", "51", "52", "53", "54", "55", "56", "57", "58", "59"],
-  "kujawsko-pomorskie": ["85", "86", "87", "88", "89"],
-  lubelskie: ["20", "21", "22", "23", "24"],
-  lubuskie: ["65", "66", "67", "68", "69"],
-  łódzkie: ["90", "91", "92", "93", "94", "95", "96", "97", "98", "99"],
-  małopolskie: ["30", "31", "32", "33", "34", "38"],
-  mazowieckie: ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"],
-  opolskie: ["45", "46", "47", "48", "49"],
-  podkarpackie: ["35", "36", "37", "38", "39"],
-  podlaskie: ["15", "16", "17", "18", "19"],
-  pomorskie: ["80", "81", "82", "83", "84"],
-  śląskie: ["40", "41", "42", "43", "44"],
-  świętokrzyskie: ["25", "26", "27", "28", "29"],
-  "warmińsko-mazurskie": ["10", "11", "12", "13", "14"],
-  wielkopolskie: ["60", "61", "62", "63", "64"],
-  zachodniopomorskie: ["70", "71", "72", "73", "74"],
-};
 const validator = {
   name: {
-    re: /^[A-Za-zÀ-ÖØ-öø-ÿĀ-žŻ-żĆ-ćĘ-ęŃ-ńÓ-óŚ-śŹ-źŻ-ż\s\-]+$/,
-    error: "Only letters, spaces, and hyphens are allowed",
+    re: /^[A-Za-zÀ-ÖØ-öø-ÿĄąĆćĘęŁłŃńÓóŚśŹźŻż\s\-]{3,}$/,
+    error:
+      "Pole musi zawierać co najmniej 3 znaki: dozwolone są tylko litery, spacje i myślniki.",
   },
   street: {
-    re: /^(\d+\s)?[A-Za-zÀ-ÖØ-öø-ÿĄąĆćĘęŁłŃńÓóŚśŹźŻż]+(?:[\s\.\-]?[A-Za-zÀ-ÖØ-öø-ÿĄąĆćĘęŁłŃńÓóŚśŹźŻż0-9]+)*$/,
-    error: "Only letters, spaces, hyphens, and numbers are allowed.",
+    re: /^[A-Za-zÀ-ÖØ-öø-ÿĄąĆćĘęŁłŃńÓóŚśŹźŻż0-9\s.\-]{5,}$/,
+    error:
+      "Ulica musi zawierać co najmniej 5 znaków: dozwolone są litery, cyfry, spacje, kropki i myślniki.",
   },
   homeNumber: {
-    re: /^\d+[A-Za-z]$/,
-    error: "Must contain a number followed by a single letter without spaces.",
+    error: "Numer budynku jest wymagany i musi być liczbą większą niż 0.",
   },
   flatNumber: {
-    re: /^\d+[A-Za-z]$/,
-    error:
-      "Must contain a number optionally followed by a single letter without spaces or special characters.",
+    error: "Jeśli podany, numer mieszkania musi być liczbą większą niż 0.",
   },
   zip: {
     re: /^\d{2}-\d{3}$/,
-    error: "Invalid ZIP code: Must follow the format XX-XXX.",
+    error: "Kod pocztowy musi być w formacie XX-XXX.",
   },
   city: {
     re: /^[A-Za-zÀ-ÖØ-öø-ÿĄąĆćĘęŁłŃńÓóŚśŹźŻż]+(?:[\s\-][A-Za-zÀ-ÖØ-öø-ÿĄąĆćĘęŁłŃńÓóŚśŹźŻż]+)*$/,
-    error: "Invalid city: Only letters, spaces, and hyphens are allowed.",
+    error:
+      "Miejscowość musi zawierać co najmniej 3 znaki: dozwolone są tylko litery, spacje i myślniki.",
+  },
+  voivodeship: {
+    error: "Wybierz województwo z listy.",
   },
 };
-const errors = [];
+
 const form = document.querySelector("form");
-form.addEventListener("submit", (e) => e.preventDefault());
-form.noValidate = true;
+const messages = document.querySelector(".messages");
 
-const firstName = document.querySelector(`input[name="firstName"]`);
-firstName.addEventListener("change", (e) =>
-  validateInput(e, "Firstname", validator.name)
-);
-const lastName = document.querySelector(`input[name="lastName"]`);
-lastName.addEventListener("change", (e) =>
-  validateInput(e, "Lastname", validator.name)
-);
-const street = document.querySelector(`input[name="street"]`);
-street.addEventListener("change", (e) =>
-  validateInput(e, "Street", validator.street)
-);
-const houseNumber = document.querySelector(`input[name="houseNumber"]`);
-houseNumber.addEventListener("change", (e) =>
-  validateInput(e, "HouseNumber", validator.homeNumber)
-);
-const flatNumber = document.querySelector(`input[name="flatNumber"]`);
-flatNumber.addEventListener("change", (e) =>
-  validateFlatNumber(e, "FlatNumber", validator.homeNumber)
-);
-const zipCode = document.querySelector(`input[name="zip"]`);
-zipCode.addEventListener("input", validateZipCode);
-const city = document.querySelector(`input[name="city"]`);
-const voivodeship = document.querySelector(`input[name="voivodeship"]`);
-const submit = document.querySelector(`input[type="submit"]`);
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+  const errors = [];
+  messages.innerHTML = "";
 
-function validateZipCode(e) {
-  console.log(this.value);
-}
+  const data = {
+    firstName: form.elements["firstName"].value,
+    lastName: form.elements["lastName"].value,
+    street: form.elements["street"].value,
+    houseNumber: form.elements["houseNumber"].value,
+    flatNumber: form.elements["flatNumber"].value,
+    zip: form.elements["zip"].value,
+    city: form.elements["city"].value,
+    voivodeship: form.elements["voivodeship"].value,
+  };
 
-function validateInput(e, str, validator) {
-  if (e.target.value.length === 0) {
-    errors.push(`Invalid ${str}: Field is empty.`);
-  } else if (!validator.name.test(e.target.value)) {
-    errors.push(`Invalid ${str}: ${validator.error}`);
+  if (!data.firstName || !validator.name.re.test(data.firstName)) {
+    errors.push("Imię: " + validator.name.error);
   }
-  console.log(errors);
-}
-
-function validateFlatNumber(e, str, validator) {
-  if (e.target.value.length === 0) {
-    errors.push(`Invalid ${str}: Field is empty.`);
-  } else if (!validator.name.test(e.target.value)) {
-    errors.push(`Invalid ${str}: ${validator.error}`);
+  if (!data.firstName || !validator.name.re.test(data.lastName)) {
+    errors.push("Nazwisko: " + validator.name.error);
   }
-  console.log(errors);
-}
+  if (!data.firstName || !validator.street.re.test(data.street)) {
+    errors.push("Ulica: " + validator.street.error);
+  }
+  if (!data.zip || !validator.zip.re.test(data.zip)) {
+    errors.push("Kod pocztowy: " + validator.zip.error);
+  }
+  if (!data.city || !validator.city.re.test(data.city)) {
+    errors.push("Miejscowość: " + validator.city.error);
+  }
+
+  if (!data.houseNumber || parseInt(data.houseNumber) < 1) {
+    errors.push("Numer budynku: " + validator.homeNumber.error);
+  }
+
+  if (data.flatNumber && parseInt(data.flatNumber) < 1) {
+    errors.push("Numer mieszkania: " + validator.flatNumber.error);
+  }
+  if (!data.voivodeship) {
+    errors.push("Województwo: " + validator.voivodeship.error);
+  }
+
+  if (errors.length > 0) {
+    errors.forEach((error) => {
+      const li = document.createElement("li");
+      li.textContent = error;
+      messages.appendChild(li);
+    });
+  } else {
+    const li = document.createElement("li");
+    li.textContent = "Dane zostały wysłane prawidłowo.";
+    messages.appendChild(li);
+  }
+});
